@@ -6,11 +6,18 @@ import cloudinary from "../utils/cloudinary.js";
 
 export const register = async (req, res) => {
     try {
-        const { fullname, email, countryCode, phoneNumber, password, role } = req.body;
+        const { fullname, email, countryCode, phoneNumber, password,confirmPassword, role } = req.body;
          
-        if (!fullname || !email || !countryCode || !phoneNumber || !password || !role) {
+        if (!fullname || !email || !countryCode || !phoneNumber || !password || !confirmPassword || !role) {
             return res.status(400).json({
                 message: "All fields are required",
+                success: false
+            });
+        }
+
+        if (password !== confirmPassword) {
+            return res.status(400).json({
+                message: "Passwords do not match!",
                 success: false
             });
         }
