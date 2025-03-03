@@ -32,10 +32,21 @@ export const register = async (req, res) => {
 
         let profilePhoto = "";
         if (req.file) {
+            console.log("File Uploaded:", req.file);
             const fileUri = getDataUri(req.file);
-            const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+            console.log("File URI:", fileUri);
+
+            const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
+                folder: "user_profiles", // Organize uploads
+                transformation: [{ width: 300, height: 300, crop: "fill" }] // Resize
+            });
+
+            console.log("Cloudinary Response:", cloudResponse);
             profilePhoto = cloudResponse.secure_url;
         }
+
+        console.log("Final Profile Photo URL:", profilePhoto);
+
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
