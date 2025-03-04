@@ -146,51 +146,63 @@ export const logout = async (req, res) => {
     }
 };
 
-export const updateProfile = async (req, res) => {
+export const updateUser = async (req, res) => {
     try {
-        const { fullname, email, phoneNumber, bio, skills } = req.body;
-        const userId = req.id; // From authentication middleware
+        const { fullname, email, countryCode, phoneNumber, role } = req.body;
+        const userId = req.params.id;
 
         let user = await User.findById(userId);
         if (!user) {
-            return res.status(400).json({
+            return res.status(404).json({
                 message: "User not found.",
                 success: false
             });
         }
 
-        let skillsArray = skills ? skills.split(",") : [];
-
-        let resumeUrl = user.profile.resume;
-        let resumeOriginalName = user.profile.resumeOriginalName;
-
-        if (req.file) {
-            const fileUri = getDataUri(req.file);
-            const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
-            resumeUrl = cloudResponse.secure_url;
-            resumeOriginalName = req.file.originalname;
-        }
-
         user.fullname = fullname || user.fullname;
         user.email = email || user.email;
+        user.countryCode = countryCode || user.countryCode;
         user.phoneNumber = phoneNumber || user.phoneNumber;
-        user.profile.bio = bio || user.profile.bio;
-        user.profile.skills = skillsArray.length > 0 ? skillsArray : user.profile.skills;
-        user.profile.resume = resumeUrl;
-        user.profile.resumeOriginalName = resumeOriginalName;
+        user.role = role || user.role;
 
         await user.save();
 
         return res.status(200).json({
-            message: "Profile updated successfully.",
+            message: "User updated successfully.",
             user,
             success: true
         });
     } catch (error) {
-        console.error("Update Profile Error:", error);
+        console.error("Update User Error:", error);
         return res.status(500).json({
             message: "Internal server error",
             success: false
         });
     }
 };
+
+export const deleteUser = async (req, res) => {
+    try {
+        const userId = req.params.id; // Get user ID from params
+
+        const user = await User.findByIdAndDelete(userId);
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found.",
+                success: false
+            });
+        }
+
+        return res.status(200).json({
+            message: "User deleted successfully.",
+            success: true
+        });
+    } catch (error) {
+        console.error("Delete User Error:", error);
+        return res.status(500).json({
+            message: "Internal server error",
+            success: false
+        });
+    }
+};
+
