@@ -8,8 +8,8 @@ const router = express.Router();
 router.route("/register").post(singleUpload,register);
 router.route("/login").post(login);
 router.route("/logout").get(logout);
-router.route("/user/update/:id").put(isAuthenticated, updateUser);
-router.route("/user/delete/:id").delete(isAuthenticated, deleteUser);
+router.route("/update/:id").put(isAuthenticated, updateUser);
+router.route("/delete/:id").delete(isAuthenticated, deleteUser);
 
 export default router;
 
