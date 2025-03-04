@@ -1,5 +1,5 @@
 import express from "express";
-import { login, logout, register, updateUser, deleteUser } from "../controllers/user.controller.js";
+import { login, logout, register, updateUser, deleteUser, getUsersByRole, getUserById } from "../controllers/user.controller.js";
 import isAuthenticated from "../middlewares/isAuthenticated.js";
 import { singleUpload } from "../middlewares/mutler.js";
  
@@ -10,6 +10,8 @@ router.route("/login").post(login);
 router.route("/logout").get(logout);
 router.route("/update/:id").put(isAuthenticated, updateUser);
 router.route("/delete/:id").delete(isAuthenticated, deleteUser);
+router.route("/getUsers").get(isAuthenticated, getUsersByRole);
+router.route("/getUserById").get(isAuthenticated, getUserById);
 
 export default router;
 

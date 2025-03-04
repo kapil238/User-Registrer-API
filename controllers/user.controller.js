@@ -206,3 +206,53 @@ export const deleteUser = async (req, res) => {
     }
 };
 
+export const getUsersByRole = async (req, res) => {
+    try {
+        const users = await User.find({ role: "user" });
+
+        if (!users.length) {
+            return res.status(404).json({
+                message: "No users found.",
+                success: false
+            });
+        }
+
+        return res.status(200).json({
+            message: "Users fetched successfully.",
+            users,
+            success: true
+        });
+    } catch (error) {
+        console.error("Get Users By Role Error:", error);
+        return res.status(500).json({
+            message: "Internal server error",
+            success: false
+        });
+    }
+};
+
+export const getUserById = async (req, res) => {
+    try {
+        const { id } = req.params; 
+
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found.",
+                success: false
+            });
+        }
+
+        return res.status(200).json({
+            message: "User fetched successfully.",
+            user,
+            success: true
+        });
+    } catch (error) {
+        console.error("Get User By ID Error:", error);
+        return res.status(500).json({
+            message: "Internal server error",
+            success: false
+        });
+    }
+};
