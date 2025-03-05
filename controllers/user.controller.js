@@ -120,6 +120,7 @@ export const login = async (req, res) => {
         }).json({
             message: `Welcome back ${user.fullname}`,
             user,
+            token, // ✅ Include the token in response
             success: true
         });
     } catch (error) {
@@ -130,6 +131,7 @@ export const login = async (req, res) => {
         });
     }
 };
+
 
 export const logout = async (req, res) => {
     try {
