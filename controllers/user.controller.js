@@ -6,47 +6,45 @@ import cloudinary from "../utils/cloudinary.js";
 
 export const register = async (req, res) => {
     try {
-        const { fullname, email, countryCode, phoneNumber, password,confirmPassword, role } = req.body;
+        const { fullname, email, countryCode, phoneNumber, password, confirmPassword, role } = req.body;
          
         if (!fullname || !email || !countryCode || !phoneNumber || !password || !confirmPassword || !role) {
-            return res.status(400).json({
-                message: "All fields are required",
-                success: false
-            });
+            return res.status(400).json({ message: "All fields are required", success: false });
         }
 
         if (password !== confirmPassword) {
-            return res.status(400).json({
-                message: "Passwords do not match!",
-                success: false
-            });
+            return res.status(400).json({ message: "Passwords do not match!", success: false });
         }
 
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({
-                message: 'User already exists with this email.',
-                success: false,
-            });
+            return res.status(400).json({ message: 'User already exists with this email.', success: false });
         }
 
         let profilePhoto = "";
+
         if (req.file) {
             console.log("File Uploaded:", req.file);
+
             const fileUri = getDataUri(req.file);
             console.log("File URI:", fileUri);
 
-            const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
-                folder: "user_profiles", // Organize uploads
-                transformation: [{ width: 300, height: 300, crop: "fill" }] // Resize
-            });
+            if (fileUri && fileUri.content) {
+                try {
+                    const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
+                        folder: "user_profiles",
+                        transformation: [{ width: 300, height: 300, crop: "fill" }]
+                    });
 
-            console.log("Cloudinary Response:", cloudResponse);
-            profilePhoto = cloudResponse.secure_url;
+                    console.log("Cloudinary Response:", cloudResponse);
+                    profilePhoto = cloudResponse.secure_url;
+                } catch (cloudError) {
+                    console.error("Cloudinary Upload Error:", cloudError);
+                }
+            }
         }
 
         console.log("Final Profile Photo URL:", profilePhoto);
-
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -59,14 +57,15 @@ export const register = async (req, res) => {
             role,
             profile: { profilePhoto }
         });
-        console.log(user);  
+
+        console.log(user);
+
         return res.status(201).json({
             message: "Account created successfully.",
             user,
             success: true
         });
-        
-        
+
     } catch (error) {
         console.error("Register Error:", error);
         return res.status(500).json({
@@ -75,6 +74,7 @@ export const register = async (req, res) => {
         });
     }
 };
+
 
 export const login = async (req, res) => {
     try {
