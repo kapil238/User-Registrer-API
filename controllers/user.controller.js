@@ -22,26 +22,10 @@ export const register = async (req, res) => {
         }
 
         let profilePhoto = "";
-
         if (req.file) {
-            console.log("File Uploaded:", req.file);
-
             const fileUri = getDataUri(req.file);
-            console.log("File URI:", fileUri);
-
-            if (fileUri && fileUri.content) {
-                try {
-                    const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
-                        folder: "user_profiles",
-                        transformation: [{ width: 300, height: 300, crop: "fill" }]
-                    });
-
-                    console.log("Cloudinary Response:", cloudResponse);
-                    profilePhoto = cloudResponse.secure_url;
-                } catch (cloudError) {
-                    console.error("Cloudinary Upload Error:", cloudError);
-                }
-            }
+            const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+            profilePhoto = cloudResponse.secure_url;
         }
 
         console.log("Final Profile Photo URL:", profilePhoto);
