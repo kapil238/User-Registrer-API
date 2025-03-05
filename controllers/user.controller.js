@@ -132,6 +132,30 @@ export const login = async (req, res) => {
     }
 };
 
+export const getMyProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.id);
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found",
+                success: false
+            });
+        }
+        return res.status(200).json({
+            message: "User profile fetched successfully",
+            user,
+            success: true
+        });
+    } catch (error) {
+        console.error("Get Profile Error:", error);
+        return res.status(500).json({
+            message: "Internal server error",
+            success: false
+        });
+    }
+};
+
+
 
 export const logout = async (req, res) => {
     try {
