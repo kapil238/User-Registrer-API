@@ -39,7 +39,7 @@ export const register = async (req, res) => {
             phoneNumber,
             password: hashedPassword,
             role,
-            profile: { profilePhoto }
+            profilePhoto
         });
 
         console.log(user);
