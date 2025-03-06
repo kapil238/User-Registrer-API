@@ -23,10 +23,22 @@ export const register = async (req, res) => {
 
         let profilePhoto = "";
         if (req.file) {
-            const fileUri = getDataUri(req.file);
-            const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
-            profilePhoto = cloudResponse.secure_url;
+            try {
+                
+                const cloudResponse = await cloudinary.uploader.upload(req.file.path, {
+                    folder: "profile_photos", // Optional: Store in a specific Cloudinary folder
+                });
+                // console.log("cloudResponse ==> ",cloudResponse.secure_url);
+                
+                profilePhoto = cloudResponse.secure_url;
+            } catch (error) {
+                console.error("Cloudinary Upload Error:", error);
+                return res.status(500).json({ error: "Failed to upload profile photo" });
+            }
         }
+
+        console.log("check ==> ",profilePhoto);
+        
 
         console.log("Final Profile Photo URL:", profilePhoto);
 
@@ -39,7 +51,7 @@ export const register = async (req, res) => {
             phoneNumber,
             password: hashedPassword,
             role,
-            profilePhoto
+            profilePhoto : profilePhoto 
         });
 
         console.log(user);
