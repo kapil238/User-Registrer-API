@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import getDataUri from "../utils/datauri.js";
 import cloudinary from "../utils/cloudinary.js";
 import nodemailer from "nodemailer";
+// dotenv.config();
 
 export const register = async (req, res) => {
   try {
@@ -196,90 +197,79 @@ export const logout = async (req, res) => {
 };
 
 export const forgotPassword = async (req, res) => {
-  try {
-    const { email } = req.body;
-    if (!email) {
-      return res
-        .status(400)
-        .json({ message: "Email is required", success: false });
-    }
-
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res
-        .status(404)
-        .json({ message: "User not found", success: false });
-    }
-
-    // Generate reset token (valid for 1 hour)
-    const resetToken = jwt.sign({ id: user._id }, process.env.SECRET_KEY, {
-      expiresIn: "1h",
-    });
-
-    // Save token & expiry to DB
-    user.resetToken = resetToken;
-    user.resetTokenExpiry = Date.now() + 3600000; // 1 hour from now
-    await user.save();
-
-    // Email setup
-    const transporter = nodemailer.createTransport({
-      service: "Gmail",
-      auth: { user: process.env.EMAIL, pass: process.env.EMAIL_PASS },
-    });
-
-    // Email content
-    const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
-    await transporter.sendMail({
-      to: user.email,
-      subject: "Password Reset Request",
-      html: `<p>Click <a href="${resetUrl}">here</a> to reset your password. This link is valid for 1 hour.</p>`,
-    });
-
-    res.json({ message: "Password reset email sent", success: true });
-  } catch (error) {
-    console.error("Forgot Password Error:", error);
-    return res
-      .status(500)
-      .json({ message: "Internal server error", success: false });
-  }
-};
-
-export const resetPassword = async (req, res) => {
     try {
-        const { token } = req.params;
-        const { password, confirmPassword } = req.body;
-
-        if (!password || !confirmPassword) {
-            return res.status(400).json({ message: "All fields are required", success: false });
-        }
-
-        if (password !== confirmPassword) {
-            return res.status(400).json({ message: "Passwords do not match!", success: false });
-        }
-
-        const decoded = jwt.verify(token, process.env.SECRET_KEY);
-        const user = await User.findOne({ _id: decoded.id, resetToken: token });
-
-        if (!user || user.resetTokenExpiry < Date.now()) {
-            return res.status(400).json({ message: "Invalid or expired token", success: false });
-        }
-
-        // Hash new password
-        const hashedPassword = await bcrypt.hash(password, 10);
-        user.password = hashedPassword;
-
-        // Clear reset token
-        user.resetToken = "";
-        user.resetTokenExpiry = null;
-        await user.save();
-
-        res.json({ message: "Password reset successfully", success: true });
-
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({ message: "Email is required", success: false });
+      }
+  
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.status(404).json({ message: "User not found", success: false });
+      }
+  
+      // Generate JWT token (valid for 1 hour)
+      const resetToken = jwt.sign({ id: user._id }, process.env.SECRET_KEY, { expiresIn: "1h" });
+  
+      // Create transporter
+      const transporter = nodemailer.createTransport({
+        service: "Gmail",
+        auth: {
+          user: process.env.EMAIL,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+  
+      // Reset URL (Frontend should handle the reset page)
+      const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
+  
+      // Send email
+      await transporter.sendMail({
+        to: user.email,
+        subject: "Password Reset Request",
+        html: `<p>Click <a href="${resetUrl}">here</a> to reset your password. The link is valid for 1 hour.</p>`,
+      });
+  
+      res.json({ message: "Password reset email sent", success: true });
     } catch (error) {
-        console.error("Reset Password Error:", error);
-        return res.status(500).json({ message: "Internal server error", success: false });
+      console.error("Forgot Password Error:", error);
+      return res.status(500).json({ message: "Internal server error", success: false });
     }
-};
+  };
+
+  export const resetPassword = async (req, res) => {
+    try {
+      const { token } = req.params;
+      const { password, confirmPassword } = req.body;
+  
+      if (!password || !confirmPassword) {
+        return res.status(400).json({ message: "All fields are required", success: false });
+      }
+  
+      if (password !== confirmPassword) {
+        return res.status(400).json({ message: "Passwords do not match!", success: false });
+      }
+  
+      const decoded = jwt.verify(token, process.env.SECRET_KEY);
+      const user = await User.findById(decoded.id);
+  
+      if (!user) {
+        return res.status(400).json({ message: "Invalid or expired token", success: false });
+      }
+  
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(password, 10);
+      user.password = hashedPassword;
+  
+      await user.save();
+  
+      res.json({ message: "Password reset successfully", success: true });
+  
+    } catch (error) {
+      console.error("Reset Password Error:", error);
+      return res.status(500).json({ message: "Internal server error", success: false });
+    }
+  };
 
 export const updateUser = async (req, res) => {
   try {
