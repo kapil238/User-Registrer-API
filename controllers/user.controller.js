@@ -221,7 +221,7 @@ export const forgotPassword = async (req, res) => {
       });
   
       // Reset URL (Frontend should handle the reset page)
-      const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
+      const resetUrl = `http://localhost:3000/resetpassword/${resetToken}`;
   
       // Send email
       await transporter.sendMail({
