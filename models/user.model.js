@@ -23,6 +23,8 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    resetToken: { type: String, default: "" }, // Stores the reset token
+    resetTokenExpiry: { type: Date }, // Expiry time for the token
     role: {
         type: String,
         enum: ['user', 'admin'],
