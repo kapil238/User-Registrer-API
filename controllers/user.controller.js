@@ -210,6 +210,9 @@ export const forgotPassword = async (req, res) => {
   
       // Generate JWT token (valid for 1 hour)
       const resetToken = jwt.sign({ id: user._id }, process.env.SECRET_KEY, { expiresIn: "1h" });
+
+      console.log(resetToken);
+      
   
       // Create transporter
       const transporter = nodemailer.createTransport({
@@ -266,6 +269,7 @@ export const forgotPassword = async (req, res) => {
       res.json({ message: "Password reset successfully", success: true });
   
     } catch (error) {
+      console.log(error.message);
       console.error("Reset Password Error:", error);
       return res.status(500).json({ message: "Internal server error", success: false });
     }
